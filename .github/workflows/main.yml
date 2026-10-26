@@ -1,0 +1,61 @@
+name: Build RSS feeds
+
+on:
+  schedule:
+    # 11:17 and 23:17 UTC = about 7:17 am / 7:17 pm Toronto time (6:17 in winter).
+    # Off the top of the hour, when GitHub's scheduler is less congested.
+    - cron: "17 11,23 * * *"
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two builds at once; let an in-progress deploy finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Generate feeds
+        # Earlier posts and images are restored from the live site, so a blocked
+        # run re-publishes the last good feeds instead of empty ones.
+        run: >
+          python generate_feeds.py
+          --out public
+          --site-url "${{ steps.pages.outputs.base_url }}"
+          --previous-site "${{ steps.pages.outputs.base_url }}"
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

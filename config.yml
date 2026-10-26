@@ -1,0 +1,31 @@
+# Public Instagram usernames to turn into RSS feeds (no "@").
+# Each one becomes feeds/<username>.xml, and all of them are merged into feeds/all.xml.
+# Replace these examples with the pages you actually want. Fewer handles = fewer blocks.
+handles:
+  - blogto
+  - cp24
+  - torontostar
+  - mapleleafs
+  - raptors
+  - bluejays
+
+# Shown on the index page and in the combined feed's title.
+site_title: GTA Instagram feeds
+
+# Newest posts requested per handle each run. Keep this at 12 or below:
+# Instagram returns the first 12 with the profile itself, so no extra requests are needed.
+posts_per_handle: 6
+
+# Posts kept in each feed (older ones roll off).
+max_items_per_feed: 30
+
+# Posts kept in the combined all.xml feed.
+combined_feed_items: 100
+
+# true  = copy each post's image into the site so it keeps working after
+#         Instagram's image links expire (a few days). Copies are publicly reachable.
+# false = link straight to Instagram's image servers (images break after expiry).
+mirror_images: true
+
+# Random pause (seconds) between handles, to stay well under Instagram's rate limits.
+delay_seconds: [5, 15]
